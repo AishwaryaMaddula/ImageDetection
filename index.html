@@ -47,6 +47,9 @@
             }
 
             document.getElementById('result').innerHTML = `<h3>Image uploaded successfully! Processing...</h3>`;
+
+            // Fetch the processed result from S3
+            fetchProcessedResult(fileName);
         });
     }
 
@@ -87,12 +90,14 @@
                     const width = bbox.Width * img.width;
                     const height = bbox.Height * img.height;
 
+                    // Draw bounding box
                     ctx.beginPath();
                     ctx.rect(left, top, width, height);
                     ctx.lineWidth = 2;
                     ctx.strokeStyle = 'red';
                     ctx.stroke();
 
+                    // Draw label
                     ctx.font = '12px Arial';
                     ctx.fillStyle = 'red';
                     ctx.fillText(`${label.Name} (${Math.round(label.Confidence)}%)`, left, top - 5);
