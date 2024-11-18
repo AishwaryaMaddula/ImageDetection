@@ -1,0 +1,94 @@
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.989.0.min.js"></script>
+<script>
+    AWS.config.update({
+        region: 'us-east-1', // Your AWS region
+        credentials: new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: 'us-east-1:6125e676-1d36-4132-b703-64affead0691' // Your Cognito Identity Pool ID
+        })
+    });
+
+    const s3 = new AWS.S3();
+    const BUCKET_NAME = 'label-recognition-project'; // Your S3 bucket name
+
+    function uploadImage() {
+        const fileInput = document.getElementById('image-input');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('Please select an image.');
+            return;
+        }
+
+        const fileName = file.name;
+        const params = {
+            Bucket: BUCKET_NAME,
+            Key: fileName,
+            Body: file,
+            ContentType: file.type
+        };
+
+        s3.upload(params, function(err, data) {
+            if (err) {
+                console.error('Error uploading image to S3:', err);
+                document.getElementById('result').innerHTML = `<h3>Error: ${err.message}</h3>`;
+                return;
+            }
+
+            document.getElementById('result').innerHTML = `<h3>Image uploaded successfully! Processing...</h3>`;
+        });
+    }
+
+    // Fetch processed result from S3 and display the labels and image
+    function fetchProcessedResult(fileName) {
+        const resultUrl = `https://${BUCKET_NAME}.s3.amazonaws.com/results/${fileName}.json`;
+
+        fetch(resultUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.labels) {
+                    displayImageWithBoundingBoxes(`https://${BUCKET_NAME}.s3.amazonaws.com/${fileName}`, data.labels);
+                } else {
+                    document.getElementById('result').innerHTML = `<h3>Error: ${data.error}</h3>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching result:', error);
+                document.getElementById('result').innerHTML = `<h3>Error: ${error.message}</h3>`;
+            });
+    }
+
+    function displayImageWithBoundingBoxes(imageUrl, labels) {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const img = new Image();
+        img.onload = function () {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            labels.forEach(label => {
+                label.Instances.forEach(instance => {
+                    const bbox = instance.BoundingBox;
+                    const left = bbox.Left * img.width;
+                    const top = bbox.Top * img.height;
+                    const width = bbox.Width * img.width;
+                    const height = bbox.Height * img.height;
+
+                    ctx.beginPath();
+                    ctx.rect(left, top, width, height);
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = 'red';
+                    ctx.stroke();
+
+                    ctx.font = '12px Arial';
+                    ctx.fillStyle = 'red';
+                    ctx.fillText(`${label.Name} (${Math.round(label.Confidence)}%)`, left, top - 5);
+                });
+            });
+
+            canvas.style.display = 'block'; // Show the canvas after drawing
+        };
+        img.src = imageUrl;
+    }
+</script>
