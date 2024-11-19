@@ -9,8 +9,8 @@
         video {
             display: block;
             width: 100%;
-            height: 75vh; /* Now takes 30% of the viewport height */
-            object-fit: cover; /* Ensures the video covers the area */
+            height: 75vh; 
+            object-fit: cover; 
         }
 
         /* Body and general styles */
@@ -46,19 +46,19 @@
         }
 
         #result {
-            text-align: center; /* Centers inline elements like text or img */
+            text-align: center; 
             margin-top: 20px;
-            display: flex; /* Enable flexbox for centering */
-            justify-content: center; /* Centers content horizontally */
-            align-items: center; /* Centers content vertically (if needed) */
-            flex-direction: column; /* Stack elements vertically (in case you have multiple elements) */
-            height: auto; /* Let the height be flexible depending on the content */
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column; 
+            height: auto; 
         }
 
     </style>
 </head>
 <body>
-    <!-- Video Section - Positioned above the title -->
+    <!-- Video Section -->
     <video autoplay muted loop>
         <source src="uivideo.mp4" type="video/mp4">
         Your browser does not support the video tag.
@@ -86,14 +86,14 @@
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.989.0.min.js"></script>
     <script>
         AWS.config.update({
-            region: 'us-east-1', // Your AWS region
+            region: 'us-east-1', 
             credentials: new AWS.CognitoIdentityCredentials({
-                IdentityPoolId: 'us-east-1:6125e676-1d36-4132-b703-64affead0691' // Your Cognito Identity Pool ID
+                IdentityPoolId: 'us-east-1:6125e676-1d36-4132-b703-64affead0691' 
             })
         });
 
         const s3 = new AWS.S3();
-        const BUCKET_NAME = 'label-recognition-project'; // Your S3 bucket name
+        const BUCKET_NAME = 'label-recognition-project'; 
 
         function uploadImage() {
             const fileInput = document.getElementById('image-input');
@@ -121,7 +121,7 @@
 
                 document.getElementById('result').innerHTML = `<h3>Image uploaded successfully! Processing...</h3>`;
 
-                // Start polling for result file availability
+                // polling for result file availability
                 pollForResult(fileName);
             });
         }
@@ -130,7 +130,7 @@
         function pollForResult(fileName) {
             const resultUrl = `https://${BUCKET_NAME}.s3.us-east-1.amazonaws.com/results/${fileName}.json`;
 
-            // Try fetching the result every 2 seconds
+            // Trying to fetch the result every 2 seconds
             setTimeout(function() {
                 fetch(resultUrl)
                     .then(response => {
@@ -158,27 +158,17 @@
             }, 2000); // Poll every 2 seconds
         }
 
+        // Function to display image with bounding boxes
         function displayImageWithBoundingBoxes(imageUrl, labels) {
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
 
             const img = new Image();
             img.onload = function () {
-                // Log image dimensions for debugging
-                console.log('Image loaded:', img.width, img.height);
-
-                // Set the canvas width and height based on the image dimensions
                 canvas.width = img.width;
                 canvas.height = img.height;
-
-                // Fill the canvas with a background color (light gray) for PNG transparency
-                ctx.fillStyle = "#f0f0f0"; // background color for better visibility of transparent PNG
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                // Draw the image on the canvas
                 ctx.drawImage(img, 0, 0);
 
-                // Draw bounding boxes and labels
                 labels.forEach(label => {
                     label.Instances.forEach(instance => {
                         const bbox = instance.BoundingBox;
@@ -187,33 +177,23 @@
                         const width = bbox.Width * img.width;
                         const height = bbox.Height * img.height;
 
-                        // Log bounding box information for debugging
-                        console.log('Bounding Box:', left, top, width, height);
-
                         // Draw bounding box
                         ctx.beginPath();
                         ctx.rect(left, top, width, height);
                         ctx.lineWidth = 2;
-                        ctx.strokeStyle = 'red';  // Color for the bounding box
+                        ctx.strokeStyle = 'red';
                         ctx.stroke();
 
-                        // Draw label above the bounding box
+                        // Draw label
                         ctx.font = '12px Arial';
                         ctx.fillStyle = 'red';
                         ctx.fillText(`${label.Name} (${Math.round(label.Confidence)}%)`, left, top - 5);
                     });
                 });
 
-                canvas.style.display = 'block'; // Ensure the canvas is displayed
-                console.log('Canvas displayed with bounding boxes.');
+                canvas.style.display = 'block'; // Show the canvas after drawing
             };
-
-            img.onerror = function () {
-                console.error('Error loading image:', imageUrl);
-            };
-
-            img.crossOrigin = "Anonymous"; // To handle CORS issues if the image is loaded from a different domain
-            img.src = imageUrl; // Start loading the image
+            img.src = imageUrl;
         }
 
     </script>
