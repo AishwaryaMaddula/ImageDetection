@@ -5,30 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Image for Label Detection</title>
     <style>
+        /* Video styling */
         video {
             display: block;
             width: 100%;
-            height: auto;
+            height: 30vh; /* Now takes 30% of the viewport height */
+            object-fit: cover; /* Ensures the video covers the area */
         }
+
+        /* Body and general styles */
         body {
             margin: 0;
             padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .description {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 1.2em;
+        }
+
+        .separator {
+            text-align: center;
+            margin-top: 20px;
+            border-top: 2px solid #333;
+            width: 50%;
+            margin: 20px auto;
+        }
+
+        #image-input {
+            display: block;
+            margin: 20px auto;
+            padding: 10px;
+        }
+
+        #result {
+            text-align: center;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <!-- Video Section -->
+    <!-- Video Section - Positioned above the title -->
     <video autoplay muted loop>
-        <source src="uivideo.mp4" type="video/mp4">
+        <source src="path-to-your-video.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
 
     <!-- Main Content -->
     <h1>Upload Image for Label Detection</h1>
+
+    <!-- Description text below the title -->
+    <div class="description">
+        This is the website for image detection, please upload an image below.
+    </div>
+
+    <!-- Separator line -->
+    <div class="separator"></div>
+
+    <!-- Image upload section -->
     <input type="file" id="image-input" accept="image/jpeg, image/jpg, image/png" onchange="uploadImage()" />
+    
+    <!-- Result section -->
     <div id="result"></div>
     <canvas id="canvas" style="display:none;"></canvas> <!-- Canvas for displaying image with bounding boxes -->
-    
+
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.989.0.min.js"></script>
     <script>
         AWS.config.update({
