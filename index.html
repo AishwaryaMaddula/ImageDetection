@@ -9,6 +9,7 @@
     <h1>Upload Image for Label Detection</h1>
     <input type="file" id="image-input" onchange="uploadImage()" />
     <div id="result"></div>
+    <canvas id="canvas" style="display:none;"></canvas> <!-- Canvas for displaying image with bounding boxes -->
     
 <script src="https://sdk.amazonaws.com/js/aws-sdk-2.989.0.min.js"></script>
 <script>
@@ -42,7 +43,7 @@
         s3.upload(params, function(err, data) {
             if (err) {
                 console.error('Error uploading image to S3:', err);
-                document.getElementById('result').innerHTML = `<h3>Error: ${err.message}</h3>`;
+                document.getElementById('result').innerHTML = `<h3 style="color:red;">Error uploading image to S3: ${err.message}</h3>`;
                 return;
             }
 
@@ -57,23 +58,8 @@
     function fetchProcessedResult(fileName) {
         const resultUrl = `https://${BUCKET_NAME}.s3.us-east-1.amazonaws.com/results/${fileName}.json`;
 
-        //fetch(resultUrl)
-        //    .then(response => response.json())
-        //    .then(data => {
-        //        if (data.labels) {
-        //            displayImageWithBoundingBoxes(`https://${BUCKET_NAME}.s3.us-east-1.amazonaws.com/${fileName}`, data.labels);
-        //        } else {
-        //            document.getElementById('result').innerHTML = `<h3>Error: ${data.error}</h3>`;
-        //        }
-        //    })
-        //    .catch(error => {
-        //        console.error('Error fetching result:', error);
-        //        document.getElementById('result').innerHTML = `<h3>Error: ${error.message}</h3>`;
-        //    });
-
-    
         // First, update status that fetching has started
-        updateStatus('Fetching result from S3...');
+        document.getElementById('result').innerHTML = `<h3>Fetching result from S3...</h3>`;
 
         // Perform fetch
         fetch(resultUrl)
@@ -85,22 +71,21 @@
             })
             .then(data => {
                 // After fetching successfully, update status
-                updateStatus('Fetched result successfully.');
+                document.getElementById('result').innerHTML = `<h3>Fetched result successfully.</h3>`;
                 
                 if (data.labels) {
                     displayImageWithBoundingBoxes(`https://${BUCKET_NAME}.s3.us-east-1.amazonaws.com/${fileName}`, data.labels);
                 } else {
-                    document.getElementById('result').innerHTML = `<h3>Error: ${data.error}</h3>`;
+                    document.getElementById('result').innerHTML = `<h3 style="color:red;">Error: No labels found in the result.</h3>`;
                 }
             })
             .catch(error => {
                 // Update status in case of error
-                updateStatus('Error fetching result: ' + error.message, true);
+                document.getElementById('result').innerHTML = `<h3 style="color:red;">Error fetching result: ${error.message}</h3>`;
                 
                 console.error('Error fetching result:', error);
-                document.getElementById('result').innerHTML = `<h3>Error: ${error.message}</h3>`;
             });
-        }        
+    }
 
     function displayImageWithBoundingBoxes(imageUrl, labels) {
         const canvas = document.getElementById('canvas');
@@ -139,3 +124,5 @@
         img.src = imageUrl;
     }
 </script>
+</body>
+</html>
