@@ -55,13 +55,13 @@
 
     // Fetch processed result from S3 and display the labels and image
     function fetchProcessedResult(fileName) {
-        const resultUrl = `https://${BUCKET_NAME}.s3.amazonaws.com/results/${fileName}.json`;
+        const resultUrl = `https://${BUCKET_NAME}.s3.us-east-1.amazonaws.com/results/${fileName}.json`;
 
         fetch(resultUrl)
             .then(response => response.json())
             .then(data => {
                 if (data.labels) {
-                    displayImageWithBoundingBoxes(`https://${BUCKET_NAME}.s3.amazonaws.com/${fileName}`, data.labels);
+                    displayImageWithBoundingBoxes(`https://${BUCKET_NAME}.s3.us-east-1.amazonaws.com/${fileName}`, data.labels);
                 } else {
                     document.getElementById('result').innerHTML = `<h3>Error: ${data.error}</h3>`;
                 }
