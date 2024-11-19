@@ -171,16 +171,13 @@
                 canvas.width = img.width;
                 canvas.height = img.height;
 
-                // Clear the canvas before drawing the new image
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // Fill the canvas with a background color (light gray) for PNG transparency
+                ctx.fillStyle = "#f0f0f0"; // background color for better visibility of transparent PNG
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
 
                 // Draw the image on the canvas
                 ctx.drawImage(img, 0, 0);
 
-                // Set a background color (optional, for visibility with transparent PNG)
-                ctx.fillStyle = "#f0f0f0"; // light gray background
-                ctx.fillRect(0, 0, canvas.width, canvas.height); // fill canvas with background color
-                
                 // Draw bounding boxes and labels
                 labels.forEach(label => {
                     label.Instances.forEach(instance => {
@@ -215,8 +212,10 @@
                 console.error('Error loading image:', imageUrl);
             };
 
+            img.crossOrigin = "Anonymous"; // To handle CORS issues if the image is loaded from a different domain
             img.src = imageUrl; // Start loading the image
         }
+
     </script>
 </body>
 </html>
