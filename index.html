@@ -164,6 +164,9 @@
 
             const img = new Image();
             img.onload = function () {
+                // Log image dimensions for debugging
+                console.log('Image loaded:', img.width, img.height);
+
                 // Set the canvas width and height based on the image dimensions
                 canvas.width = img.width;
                 canvas.height = img.height;
@@ -175,7 +178,6 @@
                 ctx.drawImage(img, 0, 0);
 
                 // Set a background color (optional, for visibility with transparent PNG)
-                // For example, light gray background
                 ctx.fillStyle = "#f0f0f0"; // light gray background
                 ctx.fillRect(0, 0, canvas.width, canvas.height); // fill canvas with background color
                 
@@ -187,6 +189,9 @@
                         const top = bbox.Top * img.height;
                         const width = bbox.Width * img.width;
                         const height = bbox.Height * img.height;
+
+                        // Log bounding box information for debugging
+                        console.log('Bounding Box:', left, top, width, height);
 
                         // Draw bounding box
                         ctx.beginPath();
@@ -203,6 +208,11 @@
                 });
 
                 canvas.style.display = 'block'; // Ensure the canvas is displayed
+                console.log('Canvas displayed with bounding boxes.');
+            };
+
+            img.onerror = function () {
+                console.error('Error loading image:', imageUrl);
             };
 
             img.src = imageUrl; // Start loading the image
