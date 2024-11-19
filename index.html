@@ -49,44 +49,44 @@
 
             document.getElementById('result').innerHTML = `<h3>Image uploaded successfully! Processing...</h3>`;
 
-            // Fetch the processed result from S3
-            fetchProcessedResult(fileName);
+            // Start polling for result file availability
+            pollForResult(fileName);
         });
     }
 
-    // Fetch processed result from S3 and display the labels and image
-    function fetchProcessedResult(fileName) {
+    // Polling function to check if the result file is available
+    function pollForResult(fileName) {
         const resultUrl = `https://${BUCKET_NAME}.s3.us-east-1.amazonaws.com/results/${fileName}.json`;
 
-        // First, update status that fetching has started
-        document.getElementById('result').innerHTML = `<h3>Fetching result from S3...</h3>`;
-
-        // Perform fetch
-        fetch(resultUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch the result file from S3.');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // After fetching successfully, update status
-                document.getElementById('result').innerHTML = `<h3>Fetched result successfully.</h3>`;
-                
-                if (data.labels) {
-                    displayImageWithBoundingBoxes(`https://${BUCKET_NAME}.s3.us-east-1.amazonaws.com/${fileName}`, data.labels);
-                } else {
-                    document.getElementById('result').innerHTML = `<h3 style="color:red;">Error: No labels found in the result.</h3>`;
-                }
-            })
-            .catch(error => {
-                // Update status in case of error
-                document.getElementById('result').innerHTML = `<h3 style="color:red;">Error fetching result: ${error.message}</h3>`;
-                
-                console.error('Error fetching result:', error);
-            });
+        // Try fetching the result every 2 seconds
+        setTimeout(function() {
+            fetch(resultUrl)
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Result file not ready yet');
+                    }
+                })
+                .then(data => {
+                    // After fetching successfully, update status
+                    document.getElementById('result').innerHTML = `<h3>Fetched result successfully.</h3>`;
+                    
+                    if (data.labels) {
+                        displayImageWithBoundingBoxes(`https://${BUCKET_NAME}.s3.us-east-1.amazonaws.com/${fileName}`, data.labels);
+                    } else {
+                        document.getElementById('result').innerHTML = `<h3 style="color:red;">Error: No labels found in the result.</h3>`;
+                    }
+                })
+                .catch(error => {
+                    // Keep polling if file is not ready
+                    console.log('Polling: ' + error.message);
+                    pollForResult(fileName); // Retry fetching the file
+                });
+        }, 2000); // Poll every 2 seconds
     }
 
+    // Function to display image with bounding boxes
     function displayImageWithBoundingBoxes(imageUrl, labels) {
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
